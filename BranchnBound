@@ -5,12 +5,13 @@ start=time()
 
 model = Model(solver= CbcSolver())
 @variable(model, x[i=1:3], Bin)
-@constraint(model, 6*x[1] + 5*x[2] + 5*x[3] <= 10)
-@objective(model, Max, 6*x[1] + 4*x[2] + 3*x[3])
+        @constraint(model, 6*x[1] + 5*x[2] + 5*x[3] <= 5)
+        @constraint(model, x[1] == 1)
+        @objective(model, Max, 6*x[1] + 4*x[2] + 3*x[3])
 
 
 
-function(model ::Jump.Model)
+
 
   mutable struct node
 
@@ -36,6 +37,8 @@ function(model ::Jump.Model)
 
   push!(lista,node(model))
 
+  flag=0
+
   while length(lista) >0
 
     flag=0
@@ -58,6 +61,7 @@ function(model ::Jump.Model)
 
       if sum(model.colVal[:]-round(model.colVal[:])) == 0  #PODA POR OTIMALIDADE
 
+
         if direcao == 1
 
           if getobjectivevalue(model) > Zglobal
@@ -78,7 +82,7 @@ function(model ::Jump.Model)
 
         shift!(lista)
 
-        flag=1
+        flag=3
 
       else #PODA POR LIMITE
 
@@ -88,7 +92,7 @@ function(model ::Jump.Model)
 
             shift!(lista)
 
-            flag =1
+            flag =2
 
           end
 
@@ -98,7 +102,7 @@ function(model ::Jump.Model)
 
             shift!(lista)
 
-            flag =1
+            flag =2
 
           end
 
@@ -162,8 +166,16 @@ function(model ::Jump.Model)
 
   fim =time()
 
-  println("Z convergence = ", Zglobal)
+  if flag == 0
 
-  println("tempo = ", fim-start)
-  
-end
+    println("Z convergence = ", Zglobal)
+
+    println("tempo = ", fim-start)
+
+  else
+
+    println("Inveasible")
+
+    println("tempo = ", fim-start)
+
+  end
