@@ -37,7 +37,9 @@ function SolveMIP(model :: Jump.Model)
   push!(lista,node(model))
 
   flag=0
-
+  
+  Solu =0
+  
   while length(lista) >0
 
     flag=0
@@ -59,8 +61,9 @@ function SolveMIP(model :: Jump.Model)
     if flag==0
 
       if sum(model.colVal[:]-round(model.colVal[:])) == 0  #PODA POR OTIMALIDADE
-
-
+        
+        Solu=1
+        
         if direcao == 1
 
           if getobjectivevalue(model) > Zglobal
@@ -166,7 +169,7 @@ function SolveMIP(model :: Jump.Model)
 end
   fim =time()
 
-  if flag == 0
+  if Solu == 1
 
     println("Z convergence = ", Zglobal)
 
