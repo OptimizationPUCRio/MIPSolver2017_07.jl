@@ -10,8 +10,7 @@ model = Model(solver= CbcSolver())
         @objective(model, Max, 6*x[1] + 4*x[2] + 3*x[3])
 
 
-
-
+function SolveMIP(model :: Jump.Model)
 
   mutable struct node
 
@@ -163,7 +162,8 @@ model = Model(solver= CbcSolver())
     end
 
   end
-
+  
+end
   fim =time()
 
   if flag == 0
