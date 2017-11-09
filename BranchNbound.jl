@@ -132,7 +132,7 @@ function SolveMIP(model :: Jump.Model)
 
         #PRIMEIRO BRANCH
 
-        modelLeft=copy(model)
+        modelLeft=deepcopy(model)
 
         modelLeft.colLower[j]=1      #ceil(modelLeft.colVal[j])
 
@@ -147,7 +147,7 @@ function SolveMIP(model :: Jump.Model)
 
         #SEGUNDO BRANCH
 
-        modelRight=copy(model)
+        modelRight=deepcopy(model)
 
         modelRight.colLower[j]=0      #floor(modelRight.colVal[j])
 
