@@ -117,7 +117,7 @@ function SolveMIP(model :: Jump.Model)
         j=0
 
           for i = 1:length(x) #PROCURA UMA VARIÁVEL NÃO BINÁRIA (sempre pega a última)
-
+                #Fazer para MILP (if model.colvat[i] == Bin)
             if model.colVal[i] !=1
               if model.colVal[i] !=0
 
@@ -168,6 +168,8 @@ function SolveMIP(model :: Jump.Model)
   
 end
   fim =time()
+
+#m.colval=x joga os valores no problema inicial
 
   if Solu == 1
 
