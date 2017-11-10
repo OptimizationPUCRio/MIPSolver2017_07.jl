@@ -61,10 +61,11 @@ m = Model(solver = CbcSolver())
   end
 
   lista = Vector{node}(0)
+  
+  model=deepcopy(m)
 
   push!(lista,node(model))
 
-  model=deepcopy(m)
 
   #---------------------------
 
