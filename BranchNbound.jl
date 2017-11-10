@@ -3,50 +3,94 @@ using Cbc
 
 start=time()
 
-model = Model(solver= CbcSolver())
-@variable(model, x[i=1:3], Bin)
-        @constraint(model, 6*x[1] + 5*x[2] + 5*x[3] <= 5)
-        @constraint(model, x[1] == 1)
-        @objective(model, Max, 6*x[1] + 4*x[2] + 3*x[3])
+Cinv = 13.16
+  M = 200
+
+m = Model(solver = CbcSolver())
+        @variable(m, x[i=1:2]>=0)
+        @variable(m, u, Bin)
+        @objective(m, Max, 4*x[1] + 3*x[2] - u*Cinv)
+
+        @constraint(m, 2*x[1] + 1*x[2] <= 4 +u*M)
+        @constraint(m, 1*x[1] + 2*x[2] <= 4 +u*M)
+
+        @constraint(m, 1*x[1] + 0.1*x[2] <= 4 +(1-u)*M)
+        @constraint(m, 0.4*x[1] + 1*x[2] <= 4 +(1-u)*M)
 
 
-function SolveMIP(model :: Jump.Model)
 
-  mutable struct node
 
-      model::JuMP.Model
+# Estruturas usadas no Branck N Bound
 
-  end
-
-  lista = Vector{node}(0)
-
+  #Definição da direção do problema
   if getobjectivesense(model) == :Max
 
     direcao = 1
 
-    Zglobal = -Inf
+    ZglobalINT = -Inf
 
   else
 
     direcao = 2
 
-    Zglobal = Inf
+    ZglobalINT = Inf
+
+  end
+  #---------------------------
+
+  #Estruta do nó
+    mutable struct node
+
+        model::JuMP.Model
+
+    end
+  #---------------------------
+
+  #Estruta da lista
+
+  vectorIndex=Vector{Int}(0)
+
+  for i = 1:length(m.colCat) #PROCURA UMA VARIÁVEL BINÁRIA
+
+    if m.colCat[i] == :Bin
+
+    push!(vectorIndex,i)
+
+    end
 
   end
 
+  lista = Vector{node}(0)
+
   push!(lista,node(model))
 
+  model=deepcopy(m)
+
+  #---------------------------
+
+  #Variáveis utilizadas como Flags ou saídas do problema
+
+  k=0
+
   flag=0
-  
-  Solu =0
-  
+
+  Solu=0
+
+  u
+
+  #-------------------------------
+
+
+  #BRANCH N Bound
+
   while length(lista) >0
 
     flag=0
 
     model=lista[1].model
 
-    status = solve(model, relaxation = true)
+    status= solve(model, relaxation = true)
+
 
     #PODA POR VIABILIDADE
 
@@ -60,24 +104,29 @@ function SolveMIP(model :: Jump.Model)
 
     if flag==0
 
-      if sum(model.colVal[:]-round(model.colVal[:])) == 0  #PODA POR OTIMALIDADE
-        
+
+      if sum(model.colVal[vectorIndex]-round(model.colVal[vectorIndex])) == 0  #PODA POR OTIMALIDADE
+
         Solu=1
-        
+
         if direcao == 1
 
-          if getobjectivevalue(model) > Zglobal
+          if getobjectivevalue(model) > ZglobalINT
 
-            Zglobal = getobjectivevalue(model)
+            ZglobalINT = getobjectivevalue(model)
+
+            u=model.colVal[:]
 
           end
 
         else
 
-          if getobjectivevalue(model) < Zglobal
+          if getobjectivevalue(model) < ZglobalINT
 
-            Zglobal = getobjectivevalue(model)
-            x=model.colVal[:]
+            ZglobalINT = getobjectivevalue(model)
+
+            u=model.colVal[:]
+
           end
 
         end
@@ -90,7 +139,7 @@ function SolveMIP(model :: Jump.Model)
 
         if direcao == 1
 
-          if getobjectivevalue(model) < Zglobal
+          if getobjectivevalue(model) < ZglobalINT
 
             shift!(lista)
 
@@ -100,7 +149,7 @@ function SolveMIP(model :: Jump.Model)
 
         else
 
-          if getobjectivevalue(model) > Zglobal
+          if getobjectivevalue(model) > ZglobalINT
 
             shift!(lista)
 
@@ -116,27 +165,25 @@ function SolveMIP(model :: Jump.Model)
 
         j=0
 
-          for i = 1:length(x) #PROCURA UMA VARIÁVEL NÃO BINÁRIA (sempre pega a última)
-                #Fazer para MILP (if model.colvat[i] == Bin)
-            if model.colVal[i] !=1
-              if model.colVal[i] !=0
+        for i in vectorIndex #Ve se a variáevl é N BIn
+
+          if m.colVal[i]-round(m.colVal[i]) !=0
 
                 j=i
 
-              end
-            end
           end
 
-        shift!(lista)
+        end
 
+        shift!(lista)
 
         #PRIMEIRO BRANCH
 
         modelLeft=deepcopy(model)
 
-        modelLeft.colLower[j]=1      #ceil(modelLeft.colVal[j])
+        modelLeft.colLower[j]=ceil(modelLeft.colVal[j])     #ceil(modelLeft.colVal[j])
 
-        modelLeft.colUpper[j]=1      #ceil(modelLeft.colVal[j])
+        modelLeft.colUpper[j]=ceil(modelLeft.colVal[j])      #ceil(modelLeft.colVal[j])
 
         NodeL=node(modelLeft)
 
@@ -149,9 +196,9 @@ function SolveMIP(model :: Jump.Model)
 
         modelRight=deepcopy(model)
 
-        modelRight.colLower[j]=0      #floor(modelRight.colVal[j])
+        modelRight.colLower[j]=floor(modelRight.colVal[j])     #floor(modelRight.colVal[j])
 
-        modelRight.colUpper[j]=0      #floor(modelRight.colVal[j])
+        modelRight.colUpper[j]=floor(modelRight.colVal[j])     #floor(modelRight.colVal[j])
 
         NodeR=node(modelRight)
 
@@ -165,15 +212,14 @@ function SolveMIP(model :: Jump.Model)
     end
 
   end
-  
-end
-  fim =time()
 
-#m.colval=x joga os valores no problema inicial
+  m.colVal=u
+
+  fim =time()
 
   if Solu == 1
 
-    println("Z convergence = ", Zglobal)
+    println("Z convergence = ", ZglobalINT)
 
     println("tempo = ", fim-start)
 
@@ -184,4 +230,3 @@ end
     println("tempo = ", fim-start)
 
   end
-
