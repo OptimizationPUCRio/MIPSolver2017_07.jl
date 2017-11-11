@@ -80,7 +80,7 @@ m = Model(solver = CbcSolver())
 
   Solu=0
 
-  u
+  Bestx=0
 
   #-------------------------------
 
@@ -137,7 +137,7 @@ m = Model(solver = CbcSolver())
 
             ZglobalINT = getobjectivevalue(model)
 
-            u=model.colVal[:]
+            Bestx=model.colVal[:]
 
           end
 
@@ -147,7 +147,7 @@ m = Model(solver = CbcSolver())
 
             ZglobalINT = getobjectivevalue(model)
 
-            u=model.colVal[:]
+            Bestx=model.colVal[:]
 
           end
 
@@ -235,7 +235,7 @@ m = Model(solver = CbcSolver())
 
   end
 
-  m.colVal=u
+  m.colVal=Bestx
 
   fim =time()
 
