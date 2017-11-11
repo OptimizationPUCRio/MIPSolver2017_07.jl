@@ -23,17 +23,21 @@ m = Model(solver = CbcSolver())
 # Estruturas usadas no Branck N Bound
 
   #Definição da direção do problema
-  if getobjectivesense(model) == :Max
+  if getobjectivesense(m) == :Max
 
     direcao = 1
 
     ZglobalINT = -Inf
+
+    Zbound = Inf
 
   else
 
     direcao = 2
 
     ZglobalINT = Inf
+
+    Zbound = -Inf
 
   end
   #---------------------------
@@ -61,11 +65,10 @@ m = Model(solver = CbcSolver())
   end
 
   lista = Vector{node}(0)
-  
+
   model=deepcopy(m)
 
   push!(lista,node(model))
-
 
   #---------------------------
 
@@ -84,7 +87,7 @@ m = Model(solver = CbcSolver())
 
   #BRANCH N Bound
 
-  while length(lista) >0
+  while Zbound-ZglobalINT > exp10(-3)
 
     flag=0
 
@@ -92,6 +95,24 @@ m = Model(solver = CbcSolver())
 
     status= solve(model, relaxation = true)
 
+    if direcao == 1
+
+        if getobjectivevalue(model) < Zbound
+
+          Zbound = getobjectivevalue(model)
+
+        end
+    else
+
+        if getobjectivevalue(model) > Zbound
+
+          Zbound = getobjectivevalue(model)
+
+        end
+
+    end
+
+    println("B = ", getobjectivevalue(model))
 
     #PODA POR VIABILIDADE
 
@@ -231,3 +252,4 @@ m = Model(solver = CbcSolver())
     println("tempo = ", fim-start)
 
   end
+
