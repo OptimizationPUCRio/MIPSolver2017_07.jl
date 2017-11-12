@@ -115,3 +115,24 @@ m= Model(solver = CbcSolver())
   end)
 
 @objective(m, Min, sum(j*y[j]+(vari-j)*x[j] for j=1:vari))
+
+
+#-----------------------
+
+#Expansão Unbounded
+
+
+Cinv = 13.16
+   M = 200
+
+       m = Model(solver = CbcSolver())
+       @variable(m, x[i=1:2])
+       @variable(m, u, Bin)
+       @objective(m, Min, 4*x[1] + 3*x[2] - u*Cinv)
+
+       @constraint(m, 2*x[1] + 1*x[2] <= 4 +u*M)
+       @constraint(m, 1*x[1] + 2*x[2] <= 4 +u*M)
+
+       @constraint(m, 1*x[1] + 0.1*x[2] <= 4 +(1-u)*M)
+       @constraint(m, 0.4*x[1] + 1*x[2] <= 4 +(1-u)*M)
+
