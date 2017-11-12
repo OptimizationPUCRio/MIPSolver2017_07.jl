@@ -1,24 +1,7 @@
-using JuMP
+sing JuMP
 using Cbc
 
 start=time()
-
-Cinv = 13.16
-  M = 200
-
-m = Model(solver = CbcSolver())
-        @variable(m, x[i=1:2]>=0)
-        @variable(m, u, Bin)
-        @objective(m, Max, 4*x[1] + 3*x[2] - u*Cinv)
-
-        @constraint(m, 2*x[1] + 1*x[2] <= 4 +u*M)
-        @constraint(m, 1*x[1] + 2*x[2] <= 4 +u*M)
-
-        @constraint(m, 1*x[1] + 0.1*x[2] <= 4 +(1-u)*M)
-        @constraint(m, 0.4*x[1] + 1*x[2] <= 4 +(1-u)*M)
-
-
-
 
 # Estruturas usadas no Branck N Bound
 
@@ -80,14 +63,17 @@ m = Model(solver = CbcSolver())
 
   Solu=0
 
-  Bestx=0
+  bestx=0
 
+  maxit=1
+
+  iter = 0
   #-------------------------------
 
 
   #BRANCH N Bound
 
-  while Zbound-ZglobalINT > exp10(-3)
+  while abs(Zbound-ZglobalINT) > exp10(-3) && iter <= maxit
 
     flag=0
 
@@ -112,7 +98,7 @@ m = Model(solver = CbcSolver())
 
     end
 
-    println("B = ", getobjectivevalue(model))
+    println("LB = ", getobjectivevalue(model))
 
     #PODA POR VIABILIDADE
 
@@ -127,7 +113,7 @@ m = Model(solver = CbcSolver())
     if flag==0
 
 
-      if sum(model.colVal[vectorIndex]-round(model.colVal[vectorIndex])) == 0  #PODA POR OTIMALIDADE
+      if sum(model.colVal[vectorIndex])-sum(round.(model.colVal[vectorIndex])) == 0  #PODA POR OTIMALIDADE
 
         Solu=1
 
@@ -137,7 +123,7 @@ m = Model(solver = CbcSolver())
 
             ZglobalINT = getobjectivevalue(model)
 
-            Bestx=model.colVal[:]
+            bestx=model.colVal[:]
 
           end
 
@@ -147,7 +133,7 @@ m = Model(solver = CbcSolver())
 
             ZglobalINT = getobjectivevalue(model)
 
-            Bestx=model.colVal[:]
+            bestx=model.colVal[:]
 
           end
 
@@ -189,7 +175,7 @@ m = Model(solver = CbcSolver())
 
         for i in vectorIndex #Ve se a variáevl é N BIn
 
-          if m.colVal[i]-round(m.colVal[i]) !=0
+          if model.colVal[i]-round(model.colVal[i]) !=0
 
                 j=i
 
@@ -232,14 +218,15 @@ m = Model(solver = CbcSolver())
       end
 
     end
-
+    println("Z convergence = ", ZglobalINT)
+    iter=iter+1
   end
-
-  m.colVal=Bestx
 
   fim =time()
 
   if Solu == 1
+
+    m.colVal=bestx
 
     println("Z convergence = ", ZglobalINT)
 
@@ -252,4 +239,3 @@ m = Model(solver = CbcSolver())
     println("tempo = ", fim-start)
 
   end
-
