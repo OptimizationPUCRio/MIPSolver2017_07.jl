@@ -169,4 +169,45 @@ function test1(solveMIP::Function, solver::MathProgBase.AbstractMathProgSolver =
                @constraint(m, 0.4*x[1] + 1*x[2] <= 4 +(1-u)*M)
         sol = solveMIP(m)                                                
         m.ext[:status] == :Infeasible  #Unbounded
-end                                                        
+end                           
+                        
+#--------------------------
+                        
+function test1(solveMIP::Function, solver::MathProgBase.AbstractMathProgSolver = JuMP.UnsetSolver())
+    @testset "PL da minha cabeça" begin
+                                
+                                
+                @variable(m, x[i=1:4]>=0)
+
+                @constraint(m, x[1]+x[2]+x[3]<=3)
+                @constraint(m, x[4]+2*x[1]+6*x[3]<=10)
+                @constraint(m, 4*x[3]+x[1]+3*x[2]<=5)
+                                
+                @objective(m, Max, 4*x[1]+5*x[2]+2*x[3]-3*x[4])
+
+                sol = solveMIP(m)
+                    @test getobjectivevalue(m) == 13
+                    @test getvalue(x) == [2 1 0 0]
+                                
+end
+                            
+                            
+                                                    
+#--------------------------
+                        
+function test1(solveMIP::Function, solver::MathProgBase.AbstractMathProgSolver = JuMP.UnsetSolver())
+    @testset "PL da minha cabeça" begin
+                                
+                                
+                @variable(m, x[i=1:4]>=0)
+
+                @constraint(m, x[1]+x[2]+x[3]<=3)
+                @constraint(m, x[4]+2*x[1]+6*x[3]<=10)
+                @constraint(m, 4*x[3]+x[1]+3*x[2]<=5)
+                @constraint(m, x[3]==2)                
+                @objective(m, Max, 4*x[1]+5*x[2]+2*x[3]-3*x[4])
+
+                sol = solveMIP(m)                                                
+                    m.ext[:status] == :Infeasible
+                                
+end
