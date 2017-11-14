@@ -132,7 +132,7 @@ function test1(solveMIP::Function, solver::MathProgBase.AbstractMathProgSolver =
 
         
         sol = solveMIP(m)
-        @test getobjectivevalue(m) == 90.000  Atol = 10^(-3)      
+        @test getobjectivevalue(m) == 90  atol = exp10(-5)    
         # vc tem que produzir 4.5, confiram
         
         
