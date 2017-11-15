@@ -1,3 +1,6 @@
+using JuMP
+  using Cbc
+
 mutable struct node
 
     model::JuMP.Model
@@ -86,7 +89,7 @@ function SolveMIP(model::JuMP.Model)
 
         model=lista[1].model
 
-        status= solve(model, relaxation = true)
+        Status= solve(model, relaxation = true)
 
         if iter==0
 
@@ -96,7 +99,7 @@ function SolveMIP(model::JuMP.Model)
 
         if direcao == 1
 
-            if getobjectivevalue(model) > Zbound && lista[1].Level == Level
+            if getobjectivevalue(model) < Zbound && lista[1].Level == Level
 
               Zbound = getobjectivevalue(model)
 
@@ -111,7 +114,7 @@ function SolveMIP(model::JuMP.Model)
             end
         else
 
-            if getobjectivevalue(model) < Zbound && lista[1].Level == Level
+            if getobjectivevalue(model) > Zbound && lista[1].Level == Level
 
               Zbound = getobjectivevalue(model)
 
@@ -127,11 +130,9 @@ function SolveMIP(model::JuMP.Model)
 
         end
 
-        println("LB = ", getobjectivevalue(model))
-
         #PODA POR VIABILIDADE
 
-        if status!=:Optimal
+        if Status!=:Optimal
 
           shift!(lista)
 
@@ -142,9 +143,9 @@ function SolveMIP(model::JuMP.Model)
         if flag==0
 
           if abs(sum(model.colVal[vectorIndex])-sum(round.(model.colVal[vectorIndex]))) <= 0.01  #PODA POR OTIMALIDADE
-
-            Solu=1
-
+          
+            Solu=Solu+1
+            
             if direcao == 1
 
               if getobjectivevalue(model) > ZglobalINT
@@ -252,10 +253,18 @@ function SolveMIP(model::JuMP.Model)
 
       fim =time()
 
-      if Solu == 1
+      m.ext[:time] = fim-start
+      m.ext[:intsols] = Solu
+      m.ext[:nodes] = iter
+      
+      if Solu != 0
 
+        m.ext[:status] = :Optimal
+        
         m.colVal=bestx
 
+        m.objVal = ZglobalINT
+        
         println("Iterações= ", iter)
 
         println("Z convergence = ", ZglobalINT)
@@ -264,6 +273,8 @@ function SolveMIP(model::JuMP.Model)
 
       else
 
+        m.ext[:status] = :Inveasible
+        
         println("Iterações= ", iter)
 
         println("Inveasible")
@@ -271,5 +282,4 @@ function SolveMIP(model::JuMP.Model)
         println("tempo = ", fim-start)
 
       end
-    return iter,ZglobalINT
 end
