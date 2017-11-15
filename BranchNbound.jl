@@ -1,12 +1,18 @@
-using JuMP
-using Cbc
-start=time()
+mutable struct node
+
+    model::JuMP.Model
+
+    Level::Integer
+
+end
+
+function SolveMIP(model::JuMP.Model)
+  start=time()
 
     # Estruturas usadas no Branck N Bound
 
-
-      #Definição da direção do problema
-      if getobjectivesense(m) == :Max 
+      #Estruta da lista
+      if getobjectivesense(m) == :Max
 
         direcao = 1
 
@@ -28,13 +34,7 @@ start=time()
       #---------------------------
 
       #Estruta do nó
-        mutable struct node
 
-            model::JuMP.Model
-
-            Level::Integer
-            
-        end
       #---------------------------
 
       #Estruta da lista
@@ -62,7 +62,7 @@ start=time()
       #Variáveis utilizadas como Flags ou saídas do problema
 
       Level=0
-      
+
       k=0
 
       flag=0
@@ -84,49 +84,49 @@ start=time()
 
         flag=0
 
-        model=lista[1].model  
-          
+        model=lista[1].model
+
         status= solve(model, relaxation = true)
-        status= solve(model, relaxation = true)
-        
+
         if iter==0
-        
-            Zbound = getobjectivevalue(model)
-                  
-        end  
-                
-        if direcao == 1
-          
-          if getobjectivevalue(model) > Zbound && lista[1].Level == Level
-          
-            Zbound = getobjectivevalue(model)
-          
-          elseif  lista[1].Level != Level
-          
-            Zbound2 = Zbound
-          
-            Zbound =Inf
-          
-            Level= Level +1
-          
-          end
-        else
-          
-          if getobjectivevalue(model) < Zbound && lista[1].Level == Level
-          
-            Zbound = getobjectivevalue(model)
-          
-          elseif  lista[1].Level != Level
-          
-          Zbound2 = Zbound
-          
-          Zbound =-Inf
-          
-          Level= Level +1
-          
-          end
-          
+
+          Zbound = getobjectivevalue(model)
+
         end
+
+        if direcao == 1
+
+            if getobjectivevalue(model) > Zbound && lista[1].Level == Level
+
+              Zbound = getobjectivevalue(model)
+
+            elseif  lista[1].Level != Level
+
+              Zbound2 = Zbound
+
+              Zbound =Inf
+
+              Level= Level +1
+
+            end
+        else
+
+            if getobjectivevalue(model) < Zbound && lista[1].Level == Level
+
+              Zbound = getobjectivevalue(model)
+
+            elseif  lista[1].Level != Level
+
+              Zbound2 = Zbound
+
+              Zbound =-Inf
+
+              Level= Level +1
+
+            end
+
+        end
+
         println("LB = ", getobjectivevalue(model))
 
         #PODA POR VIABILIDADE
@@ -140,9 +140,8 @@ start=time()
         end
 
         if flag==0
-          println("xx == ", model.colVal[vectorIndex])
 
-          if sum(model.colVal[vectorIndex])-sum(round.(model.colVal[vectorIndex])) <= 0.01  #PODA POR OTIMALIDADE
+          if abs(sum(model.colVal[vectorIndex])-sum(round.(model.colVal[vectorIndex]))) <= 0.01  #PODA POR OTIMALIDADE
 
             Solu=1
 
@@ -216,11 +215,11 @@ start=time()
             #PRIMEIRO BRANCH
 
             modelRight=deepcopy(model)
-            
+
             modelRight.colLower[j]=floor(modelRight.colVal[j])     #floor(modelRight.colVal[j])
-          
+
             modelRight.colUpper[j]=floor(modelRight.colVal[j])     #floor(modelRight.colVal[j])
-      
+
             NodeR=node(modelRight,lista[1].Level+1)
 
             push!(lista,NodeR)
@@ -231,13 +230,13 @@ start=time()
             #SEGUNDO BRANCH
 
             modelLeft=deepcopy(model)
-            
+
             modelLeft.colLower[j]=ceil(modelLeft.colVal[j])     #ceil(modelLeft.colVal[j])
 
             modelLeft.colUpper[j]=ceil(modelLeft.colVal[j])      #ceil(modelLeft.colVal[j])
 
             NodeL=node(modelLeft,lista[1].Level+1)
-            
+
             push!(lista,NodeL)
 
             #-------------------------
@@ -272,3 +271,5 @@ start=time()
         println("tempo = ", fim-start)
 
       end
+    return iter,ZglobalINT
+end
