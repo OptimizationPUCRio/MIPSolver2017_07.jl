@@ -87,40 +87,46 @@ start=time()
         model=lista[1].model  
           
         status= solve(model, relaxation = true)
-
+        status= solve(model, relaxation = true)
+        
+        if iter==0
+        
+            Zbound = getobjectivevalue(model)
+                  
+        end  
+                
         if direcao == 1
-
-            if getobjectivevalue(model) < Zbound && lista[1].Level == Level
-
-              Zbound = getobjectivevalue(model)
-
-            elseif  lista[1].Level != Level
-
-              Zbound2 = Zbound
-
-              Zbound =Inf
-              
-              Level= Level +1
-                
-            end
+          
+          if getobjectivevalue(model) > Zbound && lista[1].Level == Level
+          
+            Zbound = getobjectivevalue(model)
+          
+          elseif  lista[1].Level != Level
+          
+            Zbound2 = Zbound
+          
+            Zbound =Inf
+          
+            Level= Level +1
+          
+          end
         else
-
-            if getobjectivevalue(model) > Zbound && lista[1].Level == Level
-
-              Zbound = getobjectivevalue(model)
-
-            elseif  lista[1].Level != Level
-
-              Zbound2 = Zbound
-
-              Zbound =-Inf
-                
-              Level= Level +1
-              
-            end
-
+          
+          if getobjectivevalue(model) < Zbound && lista[1].Level == Level
+          
+            Zbound = getobjectivevalue(model)
+          
+          elseif  lista[1].Level != Level
+          
+          Zbound2 = Zbound
+          
+          Zbound =-Inf
+          
+          Level= Level +1
+          
+          end
+          
         end
-
         println("LB = ", getobjectivevalue(model))
 
         #PODA POR VIABILIDADE
