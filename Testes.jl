@@ -131,11 +131,11 @@ function test1(solveMIP::Function, solver::MathProgBase.AbstractMathProgSolver =
     @objective(m, Max, sum(cstd[j]*x[j] for j=1:QtdComp+2)+sum(cstd[k]*y[k] for k=QtdVariaveis-2*Qdiscre+1:QtdVariaveis)+sum(cstd[h]*dual[h] for h=QtdComp+3:2*QtdComp+3)+sum(cstd[u]*xc[u] for u=2*QtdComp+4:QtdVariaveis-2*Qdiscre))
 
         
-        sol = solveMIP(m)
-        @test getobjectivevalue(m) == 90  atol = exp10(-5)    
-        # vc tem que produzir 4.5, confiram
+   sol = solveMIP(m)
+   @test getobjectivevalue(m) == 90  atol = exp10(-5)    
+   # vc tem que produzir 4.5, confiram
         
-        
+   end     
 end       
         
         
