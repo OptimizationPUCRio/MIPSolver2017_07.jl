@@ -74,7 +74,7 @@ function SolveMIP(m::JuMP.Model)
 
       bestx=0
 
-      maxit=20
+      maxit=200
 
       iter = 0
 
@@ -137,7 +137,10 @@ function SolveMIP(m::JuMP.Model)
           shift!(lista)
 
           flag=1
-
+      
+          m.ext[:status] = :Inveasible
+      
+          Return
         end
 
         if flag==0
