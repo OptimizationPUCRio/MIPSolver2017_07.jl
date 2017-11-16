@@ -134,17 +134,36 @@ function SolveMIP(m::JuMP.Model)
 
         #PODA POR VIABILIDADE
 
-        if Status!=:Optimal
+       if Status ==:Infeasible
 
           shift!(lista)
 
           flag=1
-        If iter ==0
-          m.ext[:status] = :Inveasible
-        
-          Return
-        End
-      
+
+          if iter == 0
+
+            m.ext[:status] = :Infeasible
+
+            return
+
+          end
+          
+        end
+
+        if Status ==:Unbounded
+
+          shift!(lista)
+
+          flag=1
+
+          if iter == 0
+
+            m.ext[:status] = :Unbounded
+
+            return
+
+          end
+          
         end
 
         if flag==0
@@ -280,11 +299,11 @@ function SolveMIP(m::JuMP.Model)
 
       else
 
-        m.ext[:status] = :Inveasible
+        m.ext[:status] = :Infeasible
         
         println("Iterações= ", iter)
 
-        println("Inveasible")
+        println("Infeasible")
 
         println("tempo = ", fim-start)
 
