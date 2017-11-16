@@ -9,7 +9,7 @@ mutable struct node
 
 end
 
-function SolveMIP(model::JuMP.Model)
+function SolveMIP(m::JuMP.Model)
   start=time()
 
     # Estruturas usadas no Branck N Bound
