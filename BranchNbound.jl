@@ -137,10 +137,12 @@ function SolveMIP(m::JuMP.Model)
           shift!(lista)
 
           flag=1
-      
+        If iter ==0
           m.ext[:status] = :Inveasible
-      
+        
           Return
+        End
+      
         end
 
         if flag==0
