@@ -77,13 +77,15 @@ function SolveMIP(m::JuMP.Model)
       maxit=200
 
       iter = 0
+  
+      jg_time0 = time_ns()
 
       #-------------------------------
 
 
       #BRANCH N Bound
 
-      while abs(Zbound2-ZglobalINT) > exp10(-3) && iter <= maxit && length(lista)>0
+      while abs(Zbound2-ZglobalINT) > exp10(-3) && iter <= maxit && length(lista)>0 && (time_ns()-jg_time0)/1e9 < 180
 
         flag=0
 
